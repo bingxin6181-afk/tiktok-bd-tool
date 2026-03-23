@@ -1,5 +1,5 @@
+import csv
 import os
-import uuid
 from flask import Flask, render_template, request, send_file, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
@@ -38,19 +38,37 @@ def upload_file():
         file.save(input_path)
         
         try:
-            # 简单处理：读取CSV并添加示例话术
-            import pandas as pd
-            df = pd.read_csv(input_path)
+                       # 用标准库csv处理（替代pandas，部署更快）
+            input_data = []
+            with open(input_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                fieldnames = reader.fieldnames
+                
+                for row in reader:
+                    nickname = row.get('nickname', '')
+                    followers = row.get('followers', '0')
+                    
+                    # 生成3种话术（模板版）
+                    row['friendly_message'] = f"Hi {nickname}! Love your content 💖 We want to send you a FREE jewelry mystery box + 20% commission. Interested?"
+                    row['direct_message'] = f"Partnership offer for {nickname}: Free $50 product + 20% commission + exclusive discount code. {followers} followers qualify for premium tier. Reply YES to start."
+                    row['curious_message'] = f"What if you could 3x your accessory game this month? 🎁 {nickname}, we have a mystery box collab that matches your vibe perfectly..."
+                    row['ai_recommendation'] = 'friendly'
+                    
+                    input_data.append(row)
             
-            # 为每个达人生成3种话术（简化版）
-            df['friendly_message'] = 'Hi ' + df['nickname'] + '! Love your content 💖 We want to send you a FREE jewelry mystery box + 20% commission. Interested?'
-            df['direct_message'] = 'Partnership offer for ' + df['nickname'] + ': Free $50 product + 20% commission + exclusive discount code. 12k followers qualify for premium tier. Reply YES to start.'
-            df['curious_message'] = 'What if you could 3x your accessory game this month? 🎁 ' + df['nickname'] + ', we have a mystery box collab that matches your vibe perfectly...'
-            df['ai_recommendation'] = 'friendly'
+            # 添加新列名
+            new_fieldnames = fieldnames + ['friendly_message', 'direct_message', 'curious_message', 'ai_recommendation']
             
+            # 写入新CSV
             output_filename = f"processed_{input_filename}"
             output_path = os.path.join(OUTPUT_FOLDER, output_filename)
-            df.to_csv(output_path, index=False, encoding='utf-8-sig')
+            
+            with open(output_path, 'w', newline='', encoding='utf-8-sig') as f:
+                writer = csv.DictWriter(f, fieldnames=new_fieldnames)
+                writer.writeheader()
+                writer.writerows(input_data)
+            
+            flash(f'Success! Processed {len(input_data)} creators', 'success')
             
             flash(f'Success! Processed {len(df)} creators', 'success')
             return render_template('index.html', download_link=output_filename, message=f'Processed {len(df)} creators')
