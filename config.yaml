@@ -1,0 +1,29 @@
+openai:
+  api_key: "render"
+  model: "gpt-4o-mini"
+  temperature: 0.8
+  max_tokens: 1000
+
+styles:
+  friendly:
+    name: "友好型"
+    description: "温暖、共情、像朋友聊天"
+    tone: "casual, warm, empathetic"
+  direct:
+    name: "直接型" 
+    description: "专业、数据驱动、强调利益"
+    tone: "professional, data-driven, benefit-focused"
+  curious:
+    name: "好奇型"
+    description: "悬念、提问、制造好奇"
+    tone: "intriguing, questioning, mysterious"
+
+business:
+  brand_name: "Fizz and Rizz"
+  product_type: "首饰盲盒"
+  offer: "免费样品+20%佣金+专属折扣码"
+  target_audience: "18-30岁女性"
+
+retry:
+  max_attempts: 3
+  delay_seconds: 2
